@@ -1,7 +1,21 @@
 # awesome-git-tricks
 Put this in your PATH and get new handy Git commands
 
-# Command list
+## Install
+
+```bash
+cd ~/code  # put here some workspace/code/work directory you like
+git clone https://github.com/jlblancoc/awesome-git-tricks.git
+cd awesome-git-tricks
+
+# Add to .bashrc
+echo "export PATH=$(pwd):\$PATH" >> ~/.bashrc
+
+# activate it:
+. ~/.bashrc
+```
+
+## Command list
 
 `git clean-removed-in-origin`
 

@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+# Usage: ./delete-remote-branches.sh <repo-url> <substring>
+
+set -euo pipefail
+
+REPO_URL="${1:-}"
+SUBSTRING="${2:-}"
+
+if [[ -z "$REPO_URL" || -z "$SUBSTRING" ]]; then
+  echo "Usage: $0 <repo-url> <substring>"
+  exit 1
+fi
+
+echo "Searching for remote branches in: $REPO_URL"
+branches=$(git ls-remote --heads "$REPO_URL" | awk '{print $2}' | sed 's#refs/heads/##' | grep "$SUBSTRING" || true)
+
+if [[ -z "$branches" ]]; then
+  echo "No branches found matching \"$SUBSTRING\"."
+  exit 0
+fi
+
+echo "Matched branches:"
+echo "$branches"
+
+read -p "Delete these branches remotely? [y/N] " ans
+if [[ "$ans" =~ ^[Yy]$ ]]; then
+  for b in $branches; do
+    echo "Deleting branch: $b"
+    git push "$REPO_URL" --delete "$b"
+  done
+else
+  echo "Aborted."
+fi

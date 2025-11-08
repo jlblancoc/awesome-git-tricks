@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Usage: ./delete-remote-tags.sh <repo-url> <substring>
+# Example: ./delete-remote-tags.sh git@github.com:user/repo.git beta
+
+set -euo pipefail
+
+REPO_URL="${1:-}"
+SUBSTRING="${2:-}"
+
+if [[ -z "$REPO_URL" || -z "$SUBSTRING" ]]; then
+  echo "Usage: $0 <repo-url> <substring>"
+  exit 1
+fi
+
+echo "Searching for remote tags in: $REPO_URL"
+# List remote tags, strip "refs/tags/", and exclude dereferenced ^{} entries
+tags=$(git ls-remote --tags "$REPO_URL" | awk '{print $2}' | sed 's#refs/tags/##' | grep -v '\^{}' | grep "$SUBSTRING" || true)
+
+if [[ -z "$tags" ]]; then
+  echo "No tags found matching \"$SUBSTRING\"."
+  exit 0
+fi
+
+echo "Matched tags:"
+echo "$tags"
+
+read -p "Delete these tags remotely? [y/N] " ans
+if [[ "$ans" =~ ^[Yy]$ ]]; then
+  for t in $tags; do
+    echo "Deleting tag: $t"
+    git push "$REPO_URL" --delete "refs/tags/$t"
+  done
+else
+  echo "Aborted."
+fi
